@@ -1,0 +1,8 @@
+{
+  "name": "@syncspace/config",
+  "version": "1.0.0",
+  "description": "Shared configuration files for SyncSpace",
+  "scripts": {
+    "lint": "echo 'Config lint'"
+  }
+}

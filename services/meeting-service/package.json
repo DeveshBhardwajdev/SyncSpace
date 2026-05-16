@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/meeting-service",
+    "version" : "1.0.0",
+    "description": "Manages interview meeting and scheduling",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Meeting service dev'",
+        "build":"echo 'Meeting service build'",
+        "lint":"echo 'Meeting service lint'"
+    }
+}

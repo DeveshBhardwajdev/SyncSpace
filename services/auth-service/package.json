@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/auth-service",
+    "version" : "1.0.0",
+    "description": "Handles authentication and authorization",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Auth service dev'",
+        "build":"echo 'Auth service build'",
+        "lint":"echo 'Auth service lint'"
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/web",
+    "version" : "1.0.0",
+    "description": "Syncspace Next.js Frontend",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Web dev Server'",
+        "build":"echo 'Web build'",
+        "lint":"echo 'Web lint'"
+    }
+}

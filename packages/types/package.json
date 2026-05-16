@@ -1,0 +1,11 @@
+{
+  "name": "@syncspace/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types for SyncSpace",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "echo 'Types build'",
+    "lint": "echo 'Types lint'"
+  }
+}

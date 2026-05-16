@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/whiteboard-service",
+    "version" : "1.0.0",
+    "description": "Real-time collaborative Whiteboard",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Whiteboard service dev'",
+        "build":"echo 'Whiteboard service build'",
+        "lint":"echo 'Whiteboard service lint'"
+    }
+}

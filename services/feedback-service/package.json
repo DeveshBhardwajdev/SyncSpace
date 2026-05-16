@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/feedback-service",
+    "version" : "1.0.0",
+    "description": "Manages interview feedback and ratings",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Feedback service dev'",
+        "build":"echo 'Feedback service build'",
+        "lint":"echo 'Feedback service lint'"
+    }
+}

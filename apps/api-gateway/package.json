@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/api-gateway",
+    "version" : "1.0.0",
+    "description": "Syncspace API Gateway",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Gateway dev'",
+        "build":"echo 'Gateway build'",
+        "lint":"echo 'Gateway lint'"
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/user-service",
+    "version" : "1.0.0",
+    "description": "Manages User Profile and Data",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'User service dev'",
+        "build":"echo 'User service build'",
+        "lint":"echo 'User service lint'"
+    }
+}

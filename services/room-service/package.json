@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/room-service",
+    "version" : "1.0.0",
+    "description": "Manages virtual interview Rooms",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Room service dev'",
+        "build":"echo 'Room service build'",
+        "lint":"echo 'Room service lint'"
+    }
+}

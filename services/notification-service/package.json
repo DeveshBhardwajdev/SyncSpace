@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/notification-service",
+    "version" : "1.0.0",
+    "description": "Handles Emails and Push Notifications",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Notification service dev'",
+        "build":"echo 'Notification service build'",
+        "lint":"echo 'Notification service lint'"
+    }
+}

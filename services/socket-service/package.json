@@ -1,0 +1,11 @@
+{
+  "name": "@syncspace/socket-service",
+  "version": "1.0.0",
+  "description": "WebSocket server for real-time communication",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Socket service dev'",
+    "build": "echo 'Socket service build'",
+    "lint": "echo 'Socket service lint'"
+  }
+}

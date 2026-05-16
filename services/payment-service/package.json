@@ -1,0 +1,11 @@
+{
+    "name" : "@syncspace/payment-service",
+    "version" : "1.0.0",
+    "description": "Handles Subscription and payment",
+    "private" :true,
+    "scripts": {
+        "dev":"echo 'Payment service dev'",
+        "build":"echo 'Payment service build'",
+        "lint":"echo 'Payment service lint'"
+    }
+}
