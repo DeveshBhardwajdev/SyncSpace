@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # MongoDB - Primary Database
+  # ==========================================
+  mongodb:
+    image: mongo:7.0
+    container_name: syncspace-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: syncspace123
+      MONGO_INITDB_DATABASE: syncspace
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - syncspace-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # RabbitMQ - Message Broker
+  # ==========================================
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: syncspace-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: syncspace123
+      RABBITMQ_DEFAULT_VHOST: syncspace
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - syncspace-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ==========================================
+# Volumes - Persistent Storage
+# ==========================================
+volumes:
+  mongodb_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+# ==========================================
+# Networks - Internal Communication
+# ==========================================
+networks:
+  syncspace-network:
+    driver: bridge
