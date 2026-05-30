@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Compiled output
+dist/
+
+# Environment variables — NEVER push these
+.env
+.env.local
+.env.production
+.env.example
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Turbo cache
+.turbo/
