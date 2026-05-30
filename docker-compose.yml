@@ -1,0 +1,102 @@
+version: '3.8'
+
+# ─────────────────────────────────────────────
+# NETWORKS
+# Containers on the same network can talk to
+# each other using their service names as hostnames
+# ─────────────────────────────────────────────
+networks:
+  syncspace-network:
+    driver: bridge
+
+# ─────────────────────────────────────────────
+# VOLUMES
+# Volumes persist data even when containers stop
+# Without volumes, all database data is lost
+# every time a container restarts
+# ─────────────────────────────────────────────
+volumes:
+  auth-mongodb-data:
+  rabbitmq-data:
+
+# ─────────────────────────────────────────────
+# SERVICES
+# Each entry here is one container
+# ─────────────────────────────────────────────
+services:
+
+  # ───────────────────────────────────────────
+  # AUTH SERVICE
+  # Our Express + TypeScript authentication server
+  # ───────────────────────────────────────────
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: syncspace-auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://admin:password123@auth-mongodb:27017/syncspace-auth?authSource=admin
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - JWT_EXPIRES_IN=7d
+    depends_on:
+      auth-mongodb:
+        condition: service_healthy
+    networks:
+      - syncspace-network
+    restart: unless-stopped
+
+  # ───────────────────────────────────────────
+  # AUTH MONGODB
+  # Private MongoDB instance for Auth Service only
+  # No other service should connect to this
+  # ───────────────────────────────────────────
+  auth-mongodb:
+    image: mongo:7.0
+    container_name: syncspace-auth-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: syncspace-auth
+    volumes:
+      - auth-mongodb-data:/data/db
+    networks:
+      - syncspace-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ───────────────────────────────────────────
+  # RABBITMQ
+  # Message broker for communication between services
+  # Already existed from Day 2
+  # ───────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: syncspace-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password123
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - syncspace-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
