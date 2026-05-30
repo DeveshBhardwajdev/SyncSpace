@@ -22,7 +22,7 @@ COPY package.json pnpm-lock.yaml* ./
 
 # Install ALL dependencies including devDependencies
 # We need devDependencies to compile TypeScript
-RUN pnpm install --frozen-lockfile
+RUN pnpm install 
 
 # Copy the TypeScript source code
 COPY tsconfig.json ./
@@ -56,7 +56,7 @@ COPY package.json pnpm-lock.yaml* ./
 # Install ONLY production dependencies
 # No TypeScript compiler, no type definitions
 # This keeps the final container small
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --prod
 
 # Copy the compiled JavaScript from the builder stage
 # We don't copy the TypeScript source — just the output
