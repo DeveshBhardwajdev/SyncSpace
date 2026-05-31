@@ -5,13 +5,13 @@ import mongoose from "mongoose";
 export const connectDB = async(): Promise<void> =>{
     try{
 
-        const mongoURI = process.env.MONGO_URI;
+        const mongoDB_URI = process.env.MONGO_URI;
 
-        if(!mongoURI){
+        if(!mongoDB_URI){
             throw new Error("MONGO_URI is not defined in this environment variables. Check your .env file");
         }
 
-        const connection = await mongoose.connect(mongoURI);
+        const connection = await mongoose.connect(mongoDB_URI);
 
         console.log(`MongoDB connected:${connection.connection.host}`);
     }catch(error){
