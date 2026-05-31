@@ -1,34 +1,13 @@
-version: '3.8'
-
-# ─────────────────────────────────────────────
-# NETWORKS
-# Containers on the same network can talk to
-# each other using their service names as hostnames
-# ─────────────────────────────────────────────
 networks:
   syncspace-network:
     driver: bridge
 
-# ─────────────────────────────────────────────
-# VOLUMES
-# Volumes persist data even when containers stop
-# Without volumes, all database data is lost
-# every time a container restarts
-# ─────────────────────────────────────────────
 volumes:
   auth-mongodb-data:
   rabbitmq-data:
 
-# ─────────────────────────────────────────────
-# SERVICES
-# Each entry here is one container
-# ─────────────────────────────────────────────
 services:
 
-  # ───────────────────────────────────────────
-  # AUTH SERVICE
-  # Our Express + TypeScript authentication server
-  # ───────────────────────────────────────────
   auth-service:
     build:
       context: ./services/auth-service
@@ -39,9 +18,11 @@ services:
     environment:
       - PORT=3001
       - NODE_ENV=development
-      - MONGO_URI=mongodb://admin:password123@auth-mongodb:27017/syncspace-auth?authSource=admin
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-      - JWT_EXPIRES_IN=7d
+      - MONGODB_URI=mongodb://admin:password123@auth-mongodb:27017/syncspace-auth?authSource=admin
+      - JWT_ACCESS_SECRET=syncspace_access_secret_super_long_random_string_change_this_in_production
+      - JWT_ACCESS_EXPIRY=15m
+      - JWT_REFRESH_SECRET=syncspace_refresh_secret_another_long_random_string_change_this_in_production
+      - JWT_REFRESH_EXPIRY=7d
     depends_on:
       auth-mongodb:
         condition: service_healthy
@@ -49,11 +30,6 @@ services:
       - syncspace-network
     restart: unless-stopped
 
-  # ───────────────────────────────────────────
-  # AUTH MONGODB
-  # Private MongoDB instance for Auth Service only
-  # No other service should connect to this
-  # ───────────────────────────────────────────
   auth-mongodb:
     image: mongo:7.0
     container_name: syncspace-auth-mongodb
@@ -75,11 +51,6 @@ services:
       start_period: 30s
     restart: unless-stopped
 
-  # ───────────────────────────────────────────
-  # RABBITMQ
-  # Message broker for communication between services
-  # Already existed from Day 2
-  # ───────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: syncspace-rabbitmq
