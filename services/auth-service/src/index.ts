@@ -7,7 +7,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { connectDB } from "./config/db";
-import { timeStamp } from "console";
+import authRoutes from './routes/auth.routes';
+
 
 const app: Application = express();
 
@@ -27,6 +28,15 @@ app.get('/health',(req:Request, res:Response)=>{
         status: 'ok',
         service: 'auth-service',
         timeStamp: new Date().toISOString(),
+    });
+});
+
+app.use('/api/auth',authRoutes);
+
+app.use((req:Request , res:Response)=>{
+    res.status(404).json({
+        success:false,
+        message : `Routes ${req.method} ${req.url} not found`,
     });
 });
 
