@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
+import redis from '../config/redis';
+import jwt from "jsonwebtoken";
 
 import {
     hashPassword,
@@ -136,6 +138,58 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       success: false,
       message: 'Something went wrong. Please try again.',
+    });
+  }
+};
+
+// ─── Logout ────────────────────────────────────────────────────────────────
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Step 1: Get the access token from the Authorization header
+    // The header looks like: "Bearer eyJhbGc..."
+    // We split by space and take the second part — the actual token
+    const authHeader = req.headers['authorization'];
+    const accessToken = authHeader && authHeader.split(' ')[1];
+
+    if (accessToken) {
+      // Step 2: Decode the token to find out when it expires
+      // We use jwt.decode (not verify) because we don't need to validate it here
+      // We just need the expiry time so we know how long to blacklist it
+      const decoded = jwt.decode(accessToken) as { exp?: number } | null;
+
+      if (decoded && decoded.exp) {
+        // Step 3: Calculate how many seconds remain until the token expires
+        // decoded.exp is a Unix timestamp (seconds since 1970)
+        // Date.now() returns milliseconds so we divide by 1000
+        const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+
+        if (ttl > 0) {
+          // Step 4: Write the token to Redis blacklist with TTL
+          // Key format: "blacklist:TOKEN_STRING"
+          // Value: "1" (we only care that the key exists, not the value)
+          // EX ttl: Redis will automatically delete this key after ttl seconds
+          await redis.set(`blacklist:${accessToken}`, '1', 'EX', ttl);
+        }
+      }
+    }
+
+    // Step 5: Clear the refresh token cookie from the browser
+    // httpOnly: true means JavaScript cannot read this cookie (XSS protection)
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during logout',
     });
   }
 };
