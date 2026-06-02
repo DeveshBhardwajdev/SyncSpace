@@ -50,3 +50,15 @@ export const generateRefreshToken = (userId: string): string => {
 
   return jwt.sign({ userId }, secret, options);
 };
+
+export const verifyRefreshToken = (token: string): { userId: string } => {
+  const secret = process.env.JWT_REFRESH_SECRET;
+
+  if (!secret) {
+    throw new Error('JWT_REFRESH_SECRET is not defined in environment variables');
+  }
+
+  // jwt.verify throws an error if the token is invalid or expired
+  // We cast the result to tell TypeScript what shape the payload is
+  return jwt.verify(token, secret) as { userId: string };
+};

@@ -8,6 +8,7 @@ import {
     comparePassword ,
     generateAccessToken ,
     generateRefreshToken ,
+    verifyRefreshToken  
 } from '../utils/jwt.utils' ;
 
 export const register = async (req:Request , res:Response): Promise<void> =>{
@@ -192,6 +193,104 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       success: false,
       message: 'Internal server error during logout',
+    });
+  }
+};
+
+// ─── Refresh Token ─────────────────────────────────────────────────────────
+export const refresh = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Step 1: Read the refresh token from the httpOnly cookie
+    // Cookies are automatically sent by the browser on every request
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      res.status(401).json({
+        success: false,
+        message: 'No refresh token provided',
+      });
+      return;
+    }
+
+    // Step 2: Check if this refresh token has been blacklisted in Redis
+    // This catches stolen/reused tokens that were already rotated
+    const isBlacklisted = await redis.get(`blacklist:${refreshToken}`);
+
+    if (isBlacklisted) {
+      // This is a serious security event — someone is reusing an old refresh token
+      // Clear the cookie immediately
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
+      res.status(401).json({
+        success: false,
+        message: 'Refresh token reuse detected. Please login again.',
+      });
+      return;
+    }
+
+    // Step 3: Verify the refresh token signature and expiry
+    // verifyRefreshToken throws if invalid — caught by catch block below
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Step 4: Find the user in MongoDB to make sure they still exist
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: 'User no longer exists',
+      });
+      return;
+    }
+
+    // Step 5: Blacklist the OLD refresh token in Redis
+    // This is the core of rotation — old token can never be used again
+    const oldTokenDecoded = jwt.decode(refreshToken) as { exp?: number } | null;
+
+    if (oldTokenDecoded && oldTokenDecoded.exp) {
+      const ttl = oldTokenDecoded.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) {
+        await redis.set(`blacklist:${refreshToken}`, '1', 'EX', ttl);
+      }
+    }
+
+    // Step 6: Generate brand new access token and refresh token
+    const newAccessToken = generateAccessToken(
+      user._id.toString(),
+      user.role
+    );
+    const newRefreshToken = generateRefreshToken(
+      user._id.toString()
+    );
+
+    // Step 7: Send new refresh token as httpOnly cookie
+    // httpOnly means JavaScript cannot read this cookie — XSS protection
+    // maxAge is 7 days in milliseconds
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // Step 8: Send new access token in response body
+    res.status(200).json({
+      success: true,
+      message: 'Token refreshed successfully',
+      data: {
+        accessToken: newAccessToken,
+      },
+    });
+  } catch (error) {
+    // jwt.verify throws JsonWebTokenError or TokenExpiredError
+    // Both mean the token is invalid — user must login again
+    console.error('Refresh token error:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Invalid or expired refresh token. Please login again.',
     });
   }
 };
