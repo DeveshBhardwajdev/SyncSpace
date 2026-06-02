@@ -148,8 +148,12 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     // Step 1: Get the access token from the Authorization header
     // The header looks like: "Bearer eyJhbGc..."
     // We split by space and take the second part — the actual token
+    
     const authHeader = req.headers['authorization'];
+    console.log('🔍 DEBUG logout - authHeader:', authHeader); // ← ADD THIS
     const accessToken = authHeader && authHeader.split(' ')[1];
+    console.log('🔍 DEBUG logout - accessToken:', accessToken ? 'EXISTS' : 'UNDEFINED'); // ← ADD THIS
+
 
     if (accessToken) {
       // Step 2: Decode the token to find out when it expires
