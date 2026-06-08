@@ -7,6 +7,8 @@ export interface IUser extends Document{
     role : 'candidate' | 'interviewer' | 'admin';
     isVerified : boolean ;
     refreshToken? : string ;
+    provider : string ;
+    providerId : string ;
     createdAt : Date ;
     updatedAt : Date ;
 }
@@ -45,6 +47,15 @@ const UserSchema = new Schema<IUser>(
         refreshToken: {
             type : String,
             default : null,
+        },
+        provider: {
+            type: String,
+            required: true,
+            default: "local",           // Existing password users are 'local'
+        },
+        providerId: {
+            type: String,
+            required: false,            // Only set for OAuth users
         },
     },
     {

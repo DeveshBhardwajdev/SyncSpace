@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import User from "../models/user.model";
+import User,{IUser} from "../models/user.model";
 import redis from '../config/redis';
 import jwt from "jsonwebtoken";
+ 
 
 import {
     hashPassword,
@@ -298,6 +299,72 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
     res.status(401).json({
       success: false,
       message: 'Invalid or expired refresh token. Please login again.',
+    });
+  }
+};
+
+// ─── OAuth Callback Handler ────────────────────────────────────────────────────
+// This runs after Passport completes the OAuth handshake.
+// By this point req.user is already populated by Passport.
+// Our only job here is to issue JWT tokens and send them back.
+
+export const oauthCallback = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    // req.user is populated by Passport after successful OAuth
+    const user = req.user as unknown as IUser;
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "OAuth authentication failed",
+      });
+      return;
+    }
+
+    // Generate both tokens — same utility functions from Day 4
+    const accessToken = generateAccessToken(
+      (user._id as unknown) as string,
+      user.role,
+    );
+
+    const refreshToken = generateRefreshToken(
+      (user._id as unknown) as string,
+    );  
+
+    // Save refresh token to user record in MongoDB
+    user.refreshToken = refreshToken;
+    await (user as any).save();
+
+    // Send refresh token as httpOnly cookie — same pattern as Day 4
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Send access token in response body
+    // In a real frontend you would redirect to the app with the token
+    // For now we return JSON so we can test it easily
+    res.status(200).json({
+      success: true,
+      message: "OAuth login successful",
+      accessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        provider: user.provider,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "OAuth callback failed",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
