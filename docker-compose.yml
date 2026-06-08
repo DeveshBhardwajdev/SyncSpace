@@ -16,15 +16,8 @@ services:
     container_name: syncspace-auth-service
     ports:
       - "3001:3001"
-    environment:
-      - PORT=3001
-      - NODE_ENV=development
-      - MONGODB_URI=mongodb://admin:password123@auth-mongodb:27017/syncspace-auth?authSource=admin
-      - JWT_ACCESS_SECRET=syncspace_access_secret_super_long_random_string_change_this_in_production
-      - JWT_ACCESS_EXPIRY=15m
-      - JWT_REFRESH_SECRET=syncspace_refresh_secret_another_long_random_string_change_this_in_production
-      - JWT_REFRESH_EXPIRY=7d
-      - REDIS_URL=redis://redis:6379
+    env_file:
+      - ./services/auth-service/.env
     depends_on:
       auth-mongodb:
         condition: service_healthy
