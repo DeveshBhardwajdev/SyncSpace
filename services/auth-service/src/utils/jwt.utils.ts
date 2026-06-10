@@ -1,5 +1,6 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { UserRole } from '../models/user.model';
 
 // ─── Password Utilities ────────────────────────────────────────────────
 
@@ -17,7 +18,7 @@ export const comparePassword = async (
 
 // ─── JWT Token Utilities ───────────────────────────────────────────────
 
-export const generateAccessToken = (userId: string, role: string): string => {
+export const generateAccessToken = (userId: string, role: UserRole): string => {
   const secret = process.env.JWT_ACCESS_SECRET;
 
   if (!secret) {

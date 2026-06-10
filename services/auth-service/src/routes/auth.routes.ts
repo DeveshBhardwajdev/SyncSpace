@@ -2,7 +2,10 @@ import { Router } from "express";
 import { register, login, logout, refresh, oauthCallback } from "../controllers/auth.controller";
 import { registerValidation, loginValidation, handleValidationError } from "../middleware/validate.middleware";
 import { authGuard } from "../middleware/auth.middleware";
+import { requireRole } from "../middleware/role.middleware";
+import { UserRole } from "../models/user.model";
 import passport from "../config/passport";
+
 
 const router: Router = Router();
 
@@ -95,5 +98,51 @@ router.get("/github/failure", (req, res) => {
     message: "GitHub authentication failed. Please try again.",
   });
 });
+
+// ─── RBAC Test Routes ─────────────────────────────────────────────────────────
+// These routes exist purely to verify role enforcement is working correctly
+// Auth guard runs first (are you logged in?) then role guard (are you allowed?)
+
+// Only Interviewers can access this
+router.get(
+  "/test/interviewer-only",
+  authGuard,
+  requireRole(UserRole.INTERVIEWER),
+  (req, res) => {
+    res.status(200).json({
+      success: true,
+      message: "Welcome Interviewer! You have access to this route.",
+      data: { user: req.user },
+    });
+  }
+);
+
+// Only Candidates can access this
+router.get(
+  "/test/candidate-only",
+  authGuard,
+  requireRole(UserRole.CANDIDATE),
+  (req, res) => {
+    res.status(200).json({
+      success: true,
+      message: "Welcome Candidate! You have access to this route.",
+      data: { user: req.user },
+    });
+  }
+);
+
+// Both Interviewers and Candidates can access this
+router.get(
+  "/test/both-roles",
+  authGuard,
+  requireRole(UserRole.INTERVIEWER, UserRole.CANDIDATE),
+  (req, res) => {
+    res.status(200).json({
+      success: true,
+      message: "Welcome! Both roles can access this route.",
+      data: { user: req.user },
+    });
+  }
+);
 
 export default router;

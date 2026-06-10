@@ -1,7 +1,7 @@
 import { Request, Response , NextFunction } from "express";
 import  jwt from "jsonwebtoken";
 import redis from "../config/redis";
-
+import { UserRole } from '../models/user.model';
 
 
 export const authGuard = async (
@@ -54,13 +54,13 @@ export const authGuard = async (
       throw new Error('JWT_ACCESS_SECRET is not defined');
     }
 
-    const decoded = jwt.verify(token, secret) as { userId: string; role: string };
+    const decoded = jwt.verify(token, secret) as { userId: string; role: UserRole };
 
     // ── All checks passed — attach user info to request ──────────────────
     // Route handlers can now access req.user.userId and req.user.role
     req.user = {
       userId: decoded.userId,
-      role: decoded.role,
+      role: decoded.role as UserRole,
     };
 
     // Pass control to the next middleware or route handler

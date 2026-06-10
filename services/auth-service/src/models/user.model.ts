@@ -1,10 +1,19 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+// The enum is defined once here and imported everywhere else
+// This means "UserRole.CANDIDATE" is the only valid way to say 'candidate'
+// TypeScript will catch any typo at compile time before it becomes a bug
+export enum UserRole {
+    CANDIDATE = 'candidate',
+    INTERVIEWER = 'interviewer',
+    ADMIN = 'admin',
+}
+
 export interface IUser extends Document{
     name : string ;
     email : string ;
     password : string ;
-    role : 'candidate' | 'interviewer' | 'admin';
+    role : UserRole ;
     isVerified : boolean ;
     refreshToken? : string ;
     provider : string ;
@@ -36,8 +45,9 @@ const UserSchema = new Schema<IUser>(
         },
         role : {
             type : String ,
-            enum : ['candidate' , 'interviewer' ,'admin'],
-            default : 'candidate',
+            // Now references the enum values instead of raw strings
+            enum : Object.values(UserRole),
+            default : UserRole.CANDIDATE,
         },
 
         isVerified: {
@@ -51,11 +61,11 @@ const UserSchema = new Schema<IUser>(
         provider: {
             type: String,
             required: true,
-            default: "local",           // Existing password users are 'local'
+            default: "local",
         },
         providerId: {
             type: String,
-            required: false,            // Only set for OAuth users
+            required: false,
         },
     },
     {
