@@ -86,3 +86,16 @@ services:
       start_period: 10s
     restart: unless-stopped
     command: redis-server --appendonly yes
+
+  api-gateway:
+    build:
+      context: ./apps/api-gateway
+      dockerfile: Dockerfile
+    container_name: syncspace-api-gateway
+    ports:
+      - "8080:80"
+    depends_on:
+      - auth-service
+    networks:
+      - syncspace-network
+    restart: unless-stopped
