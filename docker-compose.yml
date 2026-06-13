@@ -99,3 +99,40 @@ services:
     networks:
       - syncspace-network
     restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: syncspace-user-service
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./services/user-service/.env
+    depends_on:
+      user-mongodb:
+        condition: service_healthy
+    networks:
+      - syncspace-network
+    restart: unless-stopped
+
+  user-mongodb:
+    image: mongo:7.0
+    container_name: syncspace-user-mongodb
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: syncspace-users
+    volumes:
+      - user-mongodb-data:/data/db
+    networks:
+      - syncspace-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
