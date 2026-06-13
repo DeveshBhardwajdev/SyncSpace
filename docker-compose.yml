@@ -6,6 +6,7 @@ volumes:
   auth-mongodb-data:
   rabbitmq-data:
   redis-data:
+  user-mongodb-data:
 
 services:
 
