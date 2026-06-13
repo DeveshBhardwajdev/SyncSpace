@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
+import "./config/cloudinary";
+import userRoutes from "./routes/user.route";
 
 dotenv.config();
 
@@ -13,6 +15,7 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use("/api/users", userRoutes);
 
 app.get('/api/users/health', (req: Request, res: Response) => {
   res.status(200).json({
